@@ -1,6 +1,7 @@
 import React from 'react';
 import Friend from './Friend.js';
-import friends from './friends.js'
+import friends from './friends.js';
+import _sortBy from 'lodash/sortBy';
 
 class FriendsList extends React.Component {
   constructor( props ) {
@@ -12,29 +13,35 @@ class FriendsList extends React.Component {
       order: "ascending"
     };
   }
+
   handleChange(field, event) {
-    console.log('this is field', field)
-    console.log('this is order', event.target.value)
     this.setState({ [field]: event.target.value});
   }
 
-  render() {
+  renderFriends () {
+    const sortedFriends = _sortBy(friends, (friend) => {
+      return friend[this.state.orderBy];
+    })
 
-    const friendsList = friends
-    .filter( friend => friend.name.toLowerCase().indexOf(this.state.searchText.toLowerCase()) !== -1)
-    .sort( (a,b) => a[this.state.orderBy] > b[this.state.orderBy] )
-    .map( friend => (
-      <Friend
-        currentLocation={ friend.current_location || {} }
-        friendCount={ friend.friend_count }
-        key={ friend.name }
-        name={ friend.name}
-        pictureUrl={ friend.pic_square}
-        status={ friend.status ? friend.status.message : ""}
-      />
-    ));
+    const displayFriends = this.state.order === 'descending' ? sortedFriends.reverse() : sortedFriends;
+
+    console.log("this is this.state.order", this.state.order)
+
+    return displayFriends
+      .map( friend => (
+        <Friend
+          currentLocation={ friend.current_location || {} }
+          friendCount={ friend.friend_count }
+          key={ friend.name }
+          name={ friend.name}
+          pictureUrl={ friend.pic_square}
+          status={ friend.status ? friend.status.message : ""}
+        />
+      ));
+  }
+
+  render() {
     // console.log('this is this.state.order', this.state.order)
-    const displayFriends = this.state.order === "ascending" ? friendsList : friendsList.slice().reverse();
     return (
       <div>
         <form
@@ -67,12 +74,12 @@ class FriendsList extends React.Component {
                 <option value="descending">Descending</option>
                 <option value="ascending">Ascending</option>
             </select>
-          
+
           </div>
         </form>
 
         <ul>
-          { displayFriends }
+          { this.renderFriends() }
         </ul>
 
       </div>
